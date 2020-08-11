@@ -4,22 +4,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import threading
 
-x = [0]
-y = [0]
+ax = [0]
+ay = [0]
 
 def draw():
-    global x, y
+    global ax, ay
     plt.ion()
     while(True):
-        plt.clf()
-        plt.plot(x,y)
-        plt.pause(0.1)      
-        plt.ioff()
+        x = ax
+        y = ay
+        if x.__len__() == y.__len__():
+            plt.clf()
+            plt.plot(x, y)
+            plt.pause(0.1)      
+            plt.ioff()
 
 
 def rec():
-    global x, y
-    CHUNK = 512
+    global ax, ay
+    CHUNK = 2048
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 48000
@@ -32,24 +35,16 @@ def rec():
                     input=True,
                     input_device_index=1,
                     frames_per_buffer=CHUNK)
-    ax = np.array([0])
-    ay = np.array([0])
     frames = []
     plt.ion()
-    f = 0
     drawTh = threading.Thread(target=draw)
     drawTh.start()
     while (True):
-        f += 1
         data = stream.read(CHUNK, exception_on_overflow = False)
         frames.append(data)
         data = np.frombuffer(data, dtype=np.short)
         ay = np.concatenate((ay, data))
         ax = np.concatenate((ax, np.linspace(0,CHUNK,CHUNK) / RATE + ax[-1]))   
-        if f % 100 == 0:
-            x = ax
-            y = ay
-        #print(ax.__len__())
     
     stream.stop_stream()
     stream.close()
