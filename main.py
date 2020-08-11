@@ -3,26 +3,28 @@ import wave
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
+import time
 
-ax = [0]
-ay = [0]
+ay = np.array([0])
+data = 0
 
 def draw():
-    global ax, ay
+    time.sleep(0.5)
+    global ay, data
+    RATE = 48000
     plt.ion()
     while(True):
-        x = ax
         y = ay
-        if x.__len__() == y.__len__():
-            plt.clf()
-            plt.plot(x, y)
-            plt.pause(0.1)      
-            plt.ioff()
+        x = np.linspace(1, y.__len__(), y.__len__()) / RATE
+        plt.clf()
+        plt.plot(x, y)
+        plt.pause(0.1)      
+        plt.ioff()
 
 
 def rec():
-    global ax, ay
-    CHUNK = 2048
+    global ax, ay, data
+    CHUNK = 4096
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 48000
@@ -40,12 +42,12 @@ def rec():
     drawTh = threading.Thread(target=draw)
     drawTh.start()
     while (True):
-        data = stream.read(CHUNK, exception_on_overflow = False)
-        frames.append(data)
-        data = np.frombuffer(data, dtype=np.short)
+        rawData = stream.read(CHUNK, exception_on_overflow = False)
+        #frames.append(rawData)
+        data = np.frombuffer(rawData, dtype=np.short)
         ay = np.concatenate((ay, data))
-        ax = np.concatenate((ax, np.linspace(0,CHUNK,CHUNK) / RATE + ax[-1]))   
-    
+        if ay.__len__() > 1000000:
+            ay = np.array([0])
     stream.stop_stream()
     stream.close()
     p.terminate()
