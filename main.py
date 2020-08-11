@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import threading
 import time
+import warnings
 
 ay = np.array([0])
 data = 0
@@ -12,19 +13,33 @@ def draw():
     time.sleep(0.5)
     global ay, data
     RATE = 48000
+    CHUNK = 16384
     plt.ion()
     while(True):
+        d = data
         y = ay
-        x = np.linspace(1, y.__len__(), y.__len__()) / RATE
-        plt.clf()
-        plt.plot(x, y)
-        plt.pause(0.1)      
-        plt.ioff()
+        if d.__len__() == CHUNK:
+            print('Show')
+            plt.clf()
+            freqs = np.fft.fftfreq(d.size, 1/RATE)
+            fftD = np.fft.fft(d)
+            pows = np.abs(fftD)
+            plt.plot(freqs[freqs > 0], pows[freqs > 0])
+            '''print('Run Here')
+            x = np.linspace(1, y.__len__(), y.__len__()) / RATE
+            plt.subplot(1,2,2)
+            plt.plot(x, y)
+            print('Run Here')'''
+            print('Run Here')
+            plt.pause(0.1)
+            print('Run Here')
+            plt.ioff()
+            
 
 
 def rec():
     global ax, ay, data
-    CHUNK = 4096
+    CHUNK = 16384
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
     RATE = 48000
@@ -59,4 +74,5 @@ def rec():
     wf.close()
     
 if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
     rec()
