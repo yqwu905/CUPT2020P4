@@ -14,7 +14,7 @@ def draw():
     global ay, data
     RATE = 48000
     CHUNK = 16384
-    THRESHOLD = 100
+    THRESHOLD = 300
     plt.ion()
     while(True):
         d = data
@@ -30,7 +30,7 @@ def draw():
             pows = pows[freqs > 3000]
             freqs = freqs[freqs > 3000]
             plt.plot(freqs, pows)
-            maxFreq = [(0,0), (0,0), (0,0), (0,0), (0,0), (0,0), (0,0)]
+            maxFreq = [(0,0), (0,0), (0,0), (0,0), (0,0)]
             for i in range(freqs.__len__()):
                 delta = []
                 if pows[i] > maxFreq[-1][1]:
@@ -39,18 +39,19 @@ def draw():
                     if min(delta) < THRESHOLD:
                         if pows[i] > maxFreq[delta.index(min(delta))][1]:
                             maxFreq[delta.index(min(delta))] = (freqs[i], pows[i])
+                            maxFreq.sort(reverse = True, key = lambda x:x[1])
                     else:
                         maxFreq[-1] = (freqs[i], pows[i])
                         maxFreq.sort(reverse = True, key = lambda x:x[1])
             for i in maxFreq:
                 print(i)
-                plt.annotate('(%.1f)'%(i[0]), i)
+                plt.annotate('(%.1f, %.1f)'%(i[0], i[1]), i)
             '''
             x = np.linspace(1, y.__len__(), y.__len__()) / RATE
             plt.subplot(1,2,2)
             plt.plot(x, y)
             '''
-            plt.pause(0.1)
+            plt.pause(1)
             plt.ioff()
             
 
