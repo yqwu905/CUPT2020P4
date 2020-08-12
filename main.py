@@ -14,6 +14,7 @@ def draw():
     global ay, data
     RATE = 48000
     CHUNK = 16384
+    THRESHOLD = 100
     plt.ion()
     while(True):
         d = data
@@ -21,18 +22,35 @@ def draw():
         if d.__len__() == CHUNK:
             print('Show')
             plt.clf()
+            plt.xlabel('Frequency/Hz')
+            plt.ylabel('Amplitude/mV')
             freqs = np.fft.fftfreq(d.size, 1/RATE)
             fftD = np.fft.fft(d)
             pows = np.abs(fftD)
-            plt.plot(freqs[freqs > 0], pows[freqs > 0])
-            '''print('Run Here')
+            pows = pows[freqs > 3000]
+            freqs = freqs[freqs > 3000]
+            plt.plot(freqs, pows)
+            maxFreq = [(0,0), (0,0), (0,0), (0,0), (0,0), (0,0), (0,0)]
+            for i in range(freqs.__len__()):
+                delta = []
+                if pows[i] > maxFreq[-1][1]:
+                    for j in maxFreq:
+                        delta.append(abs(freqs[i] - j[0]))
+                    if min(delta) < THRESHOLD:
+                        if pows[i] > maxFreq[delta.index(min(delta))][1]:
+                            maxFreq[delta.index(min(delta))] = (freqs[i], pows[i])
+                    else:
+                        maxFreq[-1] = (freqs[i], pows[i])
+                        maxFreq.sort(reverse = True, key = lambda x:x[1])
+            for i in maxFreq:
+                print(i)
+                plt.annotate('(%.1f)'%(i[0]), i)
+            '''
             x = np.linspace(1, y.__len__(), y.__len__()) / RATE
             plt.subplot(1,2,2)
             plt.plot(x, y)
-            print('Run Here')'''
-            print('Run Here')
+            '''
             plt.pause(0.1)
-            print('Run Here')
             plt.ioff()
             
 
